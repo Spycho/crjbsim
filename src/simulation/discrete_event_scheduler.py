@@ -1,6 +1,6 @@
 import logging
 
-from simulation import time_provider
+from src.simulation import time_provider
 
 logger = logging.getLogger(__name__)
 
