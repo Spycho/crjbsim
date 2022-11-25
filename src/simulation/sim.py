@@ -1,7 +1,7 @@
 import random
 
-from src.simulation import des_aware_logging
-from src.simulation.discrete_event_scheduler import DiscreteEventScheduler
+from simulation import des_aware_logging
+from simulation.discrete_event_scheduler import DiscreteEventScheduler
 
 
 def run_sim(initial_event, post_processing=None):

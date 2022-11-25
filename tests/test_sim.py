@@ -1,4 +1,4 @@
-from src.simulation import sim
+from simulation import sim
 
 
 def test_sim():

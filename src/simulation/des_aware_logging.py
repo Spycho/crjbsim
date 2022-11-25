@@ -1,7 +1,7 @@
 import logging
 from logging import StreamHandler
 
-from src.simulation import time_provider
+from simulation import time_provider
 
 
 class Handler(StreamHandler):
