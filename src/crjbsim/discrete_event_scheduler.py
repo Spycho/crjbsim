@@ -1,6 +1,6 @@
 import logging
 
-from simulation import time_provider
+from crjbsim import time_provider
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class DiscreteEventScheduler:
             event = self._events.pop_next()
             assert event.time >= time_provider.get_time()
             time_provider.set_time(event.time)
-            logger.debug(f"Time: {time_provider.get_time_formatted()}. Executing event {event}")
+            logger.debug(f"Executing event {event}")
             event.execute()
 
     def do_at(self, time, runnable):

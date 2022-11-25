@@ -1,7 +1,7 @@
 import random
 
-from simulation import des_aware_logging
-from simulation.discrete_event_scheduler import DiscreteEventScheduler
+from crjbsim import des_aware_logging
+from crjbsim.discrete_event_scheduler import DiscreteEventScheduler
 
 
 scheduler = None

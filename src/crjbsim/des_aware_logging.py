@@ -1,7 +1,7 @@
 import logging
 from logging import StreamHandler
 
-from simulation import time_provider
+from crjbsim import time_provider
 
 
 class Handler(StreamHandler):

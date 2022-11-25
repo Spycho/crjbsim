@@ -1,4 +1,4 @@
-from simulation import sim
+from crjbsim import sim
 
 
 def test_sim():
