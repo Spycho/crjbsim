@@ -29,9 +29,14 @@ class Event:
     def __init__(self, time, runnable):
         self.time = time
         self.runnable = runnable
+        self.cancelled = False
 
     def execute(self):
-        self.runnable()
+        if not self.cancelled:
+            self.runnable()
+
+    def cancel(self):
+        self.cancelled = True
 
     def __repr__(self):
         return f"Event({self.time}, {self.runnable})"
@@ -50,7 +55,9 @@ class DiscreteEventScheduler:
             event.execute()
 
     def do_at(self, time, runnable):
-        self._events.add(Event(time, runnable))
+        event = Event(time, runnable)
+        self._events.add(event)
+        return event
 
     def do_in(self, time_delta, runnable):
-        self._events.add(Event(time_provider.get_time() + time_delta, runnable))
+        return self.do_at(time_provider.get_time() + time_delta, runnable)
