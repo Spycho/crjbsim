@@ -3,7 +3,7 @@ import logging
 import traceback
 from asyncio import AbstractEventLoop, AbstractEventLoopPolicy, events, futures, tasks
 
-from crjbsim import time_provider
+from crjbsim import sim, time_provider
 from crjbsim.discrete_event_scheduler import DiscreteEventScheduler
 
 logger = logging.getLogger()
@@ -30,8 +30,9 @@ class DiscreteEventLoop(AbstractEventLoop):
     def run_until_complete(self, future):
         events._set_running_loop(self)
         future = tasks.ensure_future(future, loop=self)
-        self.scheduler.start()
+        self.scheduler.run_to_completion()
         events._set_running_loop(None)
+        return future
 
     def close(self):
         pass
@@ -113,6 +114,7 @@ class DiscreteEventLoopPolicy(AbstractEventLoopPolicy):
 
     def set_event_loop(self, loop):
         self.loop = loop
+        sim.scheduler = loop.scheduler if loop else None
 
     def new_event_loop(self):
         return DiscreteEventLoop()

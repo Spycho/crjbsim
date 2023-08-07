@@ -1,3 +1,5 @@
+import asyncio
+import inspect
 import logging
 
 from crjbsim import time_provider
@@ -31,9 +33,11 @@ class Event:
         self.runnable = runnable
         self.cancelled = False
 
-    def execute(self):
+    def __call__(self):
         if not self.cancelled:
-            self.runnable()
+            result = self.runnable()
+            if inspect.iscoroutine(result):
+                asyncio.create_task(result)
 
     def cancel(self):
         self.cancelled = True
@@ -45,14 +49,20 @@ class Event:
 class DiscreteEventScheduler:
     def __init__(self):
         self._events = EventQueue()
+        self.post_event_callbacks = []
 
-    def start(self):
+    def run_to_completion(self):
         while self._events:
-            event = self._events.pop_next()
-            assert event.time >= time_provider.get_time()
-            time_provider.set_time(event.time)
-            logger.debug(f"Executing event {event}")
-            event.execute()
+            self.run_next_event()
+
+    def run_next_event(self):
+        event = self._events.pop_next()
+        assert event.time >= time_provider.get_time()
+        time_provider.set_time(event.time)
+        logger.debug(f"Executing event {event}")
+        event()
+        for callback in self.post_event_callbacks:
+            callback()
 
     def do_at(self, time, runnable):
         event = Event(time, runnable)
@@ -61,3 +71,6 @@ class DiscreteEventScheduler:
 
     def do_in(self, time_delta, runnable):
         return self.do_at(time_provider.get_time() + time_delta, runnable)
+
+    def register_post_event_callback(self, callback):
+        self.post_event_callbacks.append(callback)

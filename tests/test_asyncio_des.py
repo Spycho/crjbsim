@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import logging
 import time
 from asyncio import DefaultEventLoopPolicy, events
@@ -9,6 +10,20 @@ from crjbsim.asncio_des import DiscreteEventLoopPolicy
 
 logger = logging.getLogger(__name__)
 
+
+def test_async_des_basic():
+    async def a():
+        async def b():
+            await asyncio.sleep(1)
+        await b()
+
+    try:
+        asyncio.set_event_loop_policy(DiscreteEventLoopPolicy())
+        asyncio.run(a())
+    finally:
+        asyncio.set_event_loop_policy(DefaultEventLoopPolicy())
+
+    assert time_provider.get_time() == 1
 
 async def action(name, delay, repetition):
     logger.info(f"{name} started at {datetime.now()}")
@@ -131,3 +146,22 @@ def test_async_des_mixed():
 
     assert test_list == [1]
     assert time_provider.get_time() == 3
+
+
+def test_async_des_very_mixed():
+    async def sim_movement():
+        await asyncio.sleep(1)
+        print("moved")
+
+    async def mixed_sim():
+        await asyncio.sleep(1)
+        events.get_running_loop().scheduler.do_in(2, sim_movement)
+
+    des_aware_logging.setup()
+    try:
+        asyncio.set_event_loop_policy(DiscreteEventLoopPolicy())
+        asyncio.run(mixed_sim())
+    finally:
+        asyncio.set_event_loop_policy(DefaultEventLoopPolicy())
+
+    assert time_provider.get_time() == 4
