@@ -40,7 +40,7 @@ class DiscreteEventLoop(AbstractEventLoop):
     def create_future(self):
         return futures.Future(loop=self)
 
-    def create_task(self, coro, *, name=None):
+    def create_task(self, coro, *, name=None, context=None):
         task = tasks.Task(coro, loop=self, name=name)
         return task
 
@@ -94,7 +94,7 @@ class DiscreteEventLoop(AbstractEventLoop):
     async def shutdown_asyncgens(self):
         pass
 
-    async def shutdown_default_executor(self):
+    async def shutdown_default_executor(self, timeout=None):
         pass
 
 

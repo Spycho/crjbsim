@@ -20,6 +20,9 @@ class EventQueue:
     def add(self, event):
         self._events.add(event)
 
+    def only_daemons_left(self):
+        return all(event.daemon for event in self._events)
+
     def __bool__(self):
         return bool(self._events)
 
@@ -28,9 +31,10 @@ class EventQueue:
 
 
 class Event:
-    def __init__(self, time, runnable):
+    def __init__(self, time, runnable, daemon):
         self.time = time
         self.runnable = runnable
+        self.daemon = daemon
         self.cancelled = False
 
     def __call__(self):
@@ -43,7 +47,7 @@ class Event:
         self.cancelled = True
 
     def __repr__(self):
-        return f"Event({self.time}, {self.runnable})"
+        return f"Event({self.time}, {self.runnable}, daemon={self.daemon})"
 
 
 class DiscreteEventScheduler:
@@ -52,7 +56,7 @@ class DiscreteEventScheduler:
         self.post_event_callbacks = []
 
     def run_to_completion(self):
-        while self._events:
+        while self._events and not self._events.only_daemons_left():
             self.run_next_event()
 
     def run_next_event(self):
@@ -64,13 +68,13 @@ class DiscreteEventScheduler:
         for callback in self.post_event_callbacks:
             callback()
 
-    def do_at(self, time, runnable):
-        event = Event(time, runnable)
+    def do_at(self, time, runnable, daemon=False):
+        event = Event(time, runnable, daemon)
         self._events.add(event)
         return event
 
-    def do_in(self, time_delta, runnable):
-        return self.do_at(time_provider.get_time() + time_delta, runnable)
+    def do_in(self, time_delta, runnable, daemon=False):
+        return self.do_at(time_provider.get_time() + time_delta, runnable, daemon)
 
     def register_post_event_callback(self, callback):
         self.post_event_callbacks.append(callback)

@@ -107,8 +107,10 @@ class StepManager:
     def _finished(self):
         return self.position == len(self.steps)
 
+
 def scenario(fn):
     """Decorator for scenario tests"""
+
     def scenario_test(given, when, then, step_manager):
         fn(given, when, then)
         step_manager.run()
