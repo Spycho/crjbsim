@@ -1,5 +1,7 @@
 import asyncio
+import heapq
 import inspect
+import itertools
 import logging
 
 from crjbsim import time_provider
@@ -9,16 +11,13 @@ logger = logging.getLogger(__name__)
 
 class EventQueue:
     def __init__(self):
-        self._events: set[Event] = set()
+        self._events: list[Event] = []
 
     def pop_next(self):
-        # TODO: change to store sorted
-        next_event = min(self._events, key=lambda event: event.time)
-        self._events.remove(next_event)
-        return next_event
+        return heapq.heappop(self._events)
 
     def add(self, event):
-        self._events.add(event)
+        heapq.heappush(self._events, event)
 
     def only_daemons_left(self):
         return all(event.daemon for event in self._events)
@@ -29,9 +28,11 @@ class EventQueue:
     def __len__(self):
         return len(self._events)
 
+event_id_generator = itertools.count()
 
 class Event:
     def __init__(self, time, runnable, daemon):
+        self.id = next(event_id_generator)
         self.time = time
         self.runnable = runnable
         self.daemon = daemon
@@ -45,6 +46,22 @@ class Event:
 
     def cancel(self):
         self.cancelled = True
+
+    def __lt__(self, other):
+        if self.time == other.time:
+            return self.id < other.id
+        return self.time < other.time
+
+    def __le__(self, other):
+        if self.time == other.time:
+            return self.id <= other.id
+        return self.time <= other.time
+
+    def __gt__(self, other):
+        return not self.__le__(other)
+
+    def __ge__(self, other):
+        return not self.__lt__(other)
 
     def __repr__(self):
         return f"Event({self.time}, {self.runnable}, daemon={self.daemon})"
